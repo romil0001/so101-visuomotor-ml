@@ -5,12 +5,20 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "so101-visuomotor-ml"
 version = "0.1.0"
-description = "Offline visuomotor ML for SO-101: ACT, SmolVLA convert, HG-DAgger fine-tune, protocol metrics"
+description = "Visuomotor policy learning on low-cost hardware: ACT, SmolVLA, HG-DAgger, hybrid depth grasp, protocol metrics"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "romil0001", email = "romil2002modi@gmail.com" }]
-keywords = ["robotics", "imitation-learning", "ACT", "DAgger", "SmolVLA", "visuomotor"]
+authors = [{ name = "Romil Modi", email = "romil2002modi@gmail.com" }]
+keywords = [
+  "robotics",
+  "imitation-learning",
+  "visuomotor",
+  "ACT",
+  "DAgger",
+  "SmolVLA",
+  "research",
+]
 dependencies = [
   "numpy",
   "torch",

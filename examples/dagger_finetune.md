@@ -1,7 +1,6 @@
-# Offline DAgger fine-tune
+# HG-DAgger fine-tuning (offline stage)
 
-Record corrections on the robot with the full-stack `python -m so101 dagger`,
-then:
+On-robot intervention collection is performed in the companion repository (`python -m so101 dagger`). This package aggregates those corrections with the demonstration corpus and fine-tunes ACT.
 
 ```bash
 python -m so101_ml dagger-finetune \
@@ -11,4 +10,4 @@ python -m so101_ml dagger-finetune \
   --steps 8000
 ```
 
-Correction episodes are forced into the train split; val stays a holdout of demos.
+Correction episodes are forced into the training split; the validation holdout remains drawn from original demonstrations. The baseline checkpoint directory is left unchanged for fair `compare-eval`.
