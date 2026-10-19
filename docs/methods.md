@@ -1,70 +1,99 @@
 # Methods
 
-Offline visuomotor learning for SO-101 pick-and-place (*Place keys into metal cup*).
-Hardware apparatus and live robot loops: [full stack repo](https://github.com/romil0001/SO101_Visuomotor_Manipulation).
+**Platform plant:** SO-101 (leader–follower, STS3215).  
+**Task:** *Place keys into metal cup.*  
+**Author:** Romil Modi.  
+**Hardware and live control loops:** [SO101_Visuomotor_Manipulation](https://github.com/romil0001/SO101_Visuomotor_Manipulation).
+
+This document describes the **learning and evaluation methodology** implemented in `so101_ml`. Apparatus construction, power, and camera networking are out of scope here.
 
 ## Research question
 
-Can imitation learning (ACT / SmolVLA), interactive corrections (HG-DAgger), and
-depth-assisted contact control improve **protocol-measured** success on a
-low-cost arm—reporting `pc_success`, not train loss?
+Can a low-cost visuomotor stack support (i) reproducible offline imitation (ACT; SmolVLA), (ii) interactive imitation via human-gated DAgger, and (iii) depth-assisted contact control, when success is measured by a **fixed protocol** with binary labels and condition strata—rather than by training loss?
 
-## Dataset
+## Apparatus (summary)
 
-Local episode folders (no Hub required for ACT):
+| Element | Specification |
+|---------|----------------|
+| Plant | SO-101 leader + follower, 6 DoF each |
+| Sensing | Wrist RGB + metric depth (Intel RealSense D405); overhead RGB |
+| Compute (learning) | Offline training on workstation (e.g. Apple MPS / CUDA) |
+| Driver boundary | Hugging Face LeRobot for I/O in the companion repo; learning logic in `so101_ml` |
 
-| Modality | File | Format |
-|----------|------|--------|
-| State | `state.npy` | float32 [T, 6] |
-| Action | `action.npy` | float32 [T, 6] |
-| RGB | `wrist.mp4`, `overhead.mp4` | H×W×3 |
-| Depth | `wrist_depth.npy` | uint16 mm (optional) |
+## Data collection and representation
 
-DAgger corrections set `source=dagger` and `intervention=true` in `episode.json`.
+Leader joint commands are recorded as **actions**; follower joint states as **states**. Cameras are fixed between record and eval via shared configuration in the companion stack.
 
-## ACT
+Episode directory layout (`data/datasets/<name>/episodes/NNNNNN/`):
 
-Zhao et al. (2023): ResNet18 + CVAE transformer, chunk size 100, L1 + KL.
-Episode holdout (`val_frac=0.2`); checkpoint on offline `val_l1` (`best_val/`).
-Optional metric depth in the vision stack; optional JAX/Flax tiny backbone.
+| Modality | File | Shape / format |
+|----------|------|----------------|
+| Proprioception | `state.npy` | float32 `[T, 6]` |
+| Command | `action.npy` | float32 `[T, 6]` |
+| Wrist / overhead RGB | `*.mp4` | native resolution, dataset fps |
+| Wrist depth (optional) | `wrist_depth.npy` | uint16 millimetres, colour-aligned |
 
-## SmolVLA
+Joint order: `shoulder_pan`, `shoulder_lift`, `elbow_flex`, `wrist_flex`, `wrist_roll`, `gripper`.
 
-Convert demos with `python -m so101_ml convert`, then fine-tune with LeRobot.
-Depth is dropped at export. Language task string matches recording.
+DAgger correction episodes set `source=dagger` and `intervention=true` in `episode.json`. Only expert intervention frames are treated as supervised targets for fine-tuning; autonomous policy frames are not labelled as expert actions.
 
-## Human-gated DAgger
+## Policies
 
-Ross et al. (2011) DAgger; Kelly et al. (2019) HG-DAgger.
+### Action Chunking Transformer (ACT)
 
-1. Policy rolls out on the robot (full stack).
-2. Operator pauses; leader moves to follower pose; human corrects.
-3. Only correction frames are saved.
-4. This repo merges demos + corrections and fine-tunes ACT (`dagger-finetune`),
-   forcing correction episodes into the train split.
+Implementation follows Zhao et al. (2023): ResNet-18 visual backbone, CVAE latent, transformer encoder–decoder, action chunks of length 100, L1 reconstruction plus KL regularisation. Training uses an episode-level holdout (`val_frac=0.2`, fixed seed). Checkpoints are selected on offline validation L1 (`best_val/`). Optional RGB + normalised wrist depth in the vision stack; optional JAX/Flax `tiny` backbone via `--backend jax`.
 
-## Hybrid depth grasp
+### SmolVLA
 
-Base policy handles approach/transport; near contact, an analytic controller
-adjusts vertical joints from wrist depth ROI, then releases for place.
+Demonstrations are converted to LeRobot format (`python -m so101_ml convert`) and fine-tuned with language task conditioning. **Depth is dropped at export.** Inference uses the same camera names and task string as recording, via `SmolVLAPolicyWrap`.
 
-## Protocol evaluation
+### Hybrid depth-assisted grasp
 
-YAML conditions (keys left / center / right), repeated trials, binary success.
-Primary metric: `pc_success` and `per_condition`. Compare runs with
-`compare-eval`.
+A base policy (ACT or SmolVLA) controls approach and transport. When wrist depth in a configured ROI indicates proximity to the target, `DepthGraspController` overrides vertical joints using metric depth, then returns control after contact / lift criteria. Depth is an intervention signal at contact, not an additional SmolVLA input.
 
-## Reinforcement learning (roadmap)
+### Human-gated DAgger (interactive imitation)
 
-After a measured DAgger improvement, the next stage is **human-in-the-loop RL**
-(HIL-SERL / Luo et al. 2024): sparse success reward (classifier or manual),
-demo buffer + online SAC/RLPD, human interventions for safety. Not shipped in
-v1 of this showcase—implementation belongs with the full-stack robot loop.
+Behavioural cloning suffers from covariate shift when the learner visits states absent from demonstrations (Ross, Gordon, & Bagnell, 2011). Human-gated DAgger (Kelly et al., 2019) lets an expert intervene on demand.
+
+**On-robot (companion repository):** policy rollout → pause → synchronise leader to follower pose → record correction window → resume or save.
+
+**Offline (this repository):** `combine_datasets` concatenates demos and corrections; `dagger-finetune` / `train --corrections` forces correction indices into the train split, initialises from a prior ACT checkpoint (reduced learning rate), and writes a new run directory so the baseline checkpoint is preserved.
+
+## Evaluation protocol
+
+Scored evaluation uses a frozen YAML protocol (default: keys left / center / right). Each trial: home pose, scene reset, closed-loop rollout under timeout, binary human judgment against a written success criterion. Aggregate metrics:
+
+- `pc_success` ∈ [0, 100] (percent in published summaries)
+- `per_condition` rates
+- Pairwise `delta_pc_success` via `compare-eval`
+
+Train loss is explicitly not used as a manipulation score.
+
+### Reported baseline (committed figures)
+
+| Method | `n_trials` | `n_success` | `pc_success` | Completeness |
+|--------|------------|-------------|--------------|--------------|
+| ACT | 10 | 1 | 10.0 | Incomplete condition grid |
+| SmolVLA | 15 | 0 | 0.0 | Full 5×3 grid |
+
+See [`assets/eval/baseline.json`](../assets/eval/baseline.json). Low offline rates motivate DAgger and hybrid contact assistance.
+
+## Reinforcement learning (next stage)
+
+After a statistically and operationally meaningful DAgger improvement under the same protocol, we plan **human-in-the-loop sample-efficient RL** in the style of HIL-SERL (Luo, Xu, Wu, & Levine, 2024): offline demos, optional vision-based success classifier, online actor–learner with human interventions, and joint/workspace limits. That loop depends on real-robot I/O and is **not** part of this offline package.
+
+## Reproducibility
+
+```bash
+python -m so101_ml train --dataset <name> --val-frac 0.2 --seed 0
+python -m so101_ml dagger-finetune --dataset <name> --steps 8000
+python -m so101_ml compare-eval --baseline <a>/summary.json --candidate <b>/summary.json
+```
 
 ## References
 
-- Zhao et al. (2023). ACT. *CoRL*.
-- Ross, Gordon, Bagnell (2011). DAgger. *AISTATS*.
-- Kelly et al. (2019). HG-DAgger. *ICRA*.
-- Luo et al. (2024). HIL-SERL. Human-in-the-loop RL for manipulation.
-- Hugging Face LeRobot / SmolVLA documentation.
+1. Zhao, T. Z., Kumar, V., Levine, S., & Finn, C. (2023). Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware. *Conference on Robot Learning (CoRL)*.
+2. Ross, S., Gordon, G., & Bagnell, J. A. (2011). A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning. *AISTATS*.
+3. Kelly, M., Sidrane, C., Driggs-Campbell, K., & Kochenderfer, M. J. (2019). HG-DAgger: Interactive Imitation Learning with Human Experts. *IEEE ICRA*.
+4. Luo, J., Xu, C., Wu, J., & Levine, S. (2024). Precise and Dexterous Robotic Manipulation via Human-in-the-Loop Reinforcement Learning. *arXiv:2410.21845*.
+5. Hugging Face LeRobot. SO-101 documentation and SmolVLA. https://huggingface.co/docs/lerobot
