@@ -1,0 +1,20 @@
+# Depth grasp assist for hybrid SmolVLA (or ACT) eval.
+# Units: millimeters / degrees. Tune on the robot with wrist depth visible on the dashboard.
+enabled: true
+roi_frac: 0.3
+enter_mm: 180.0
+target_mm: 89.0
+exit_mm: 280.0
+tol_mm: 15.0
+min_mm: 40.0
+max_mm: 2000.0
+gain_deg_per_mm: 0.08
+vertical_joints: [shoulder_lift, elbow_flex]
+joint_signs:
+  shoulder_lift: 1.0
+  elbow_flex: 1.0
+max_delta_deg: 4.0
+close_gripper: true
+# Set from demos (closed gripper value in your recordings).
+gripper_closed: 10.0
+hold_close_frames: 8

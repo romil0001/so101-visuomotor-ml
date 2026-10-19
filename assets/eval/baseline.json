@@ -1,0 +1,43 @@
+{
+  "protocol": "config/eval/pen_to_keys.yaml",
+  "fixture": false,
+  "backfilled_summaries": [
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_act_so101_d405_demo/20260827_121151/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_act_so101_d405_demo/20260826_030923/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260827_120610/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260826_031222/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260826_021702/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260826_020752/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260826_022917/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260827_121609/summary.json",
+    "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260827_121808/summary.json",
+    "outputs/eval/outputs_train_smolvla_so101_d405_demo_checkpoints_015000_pretrained_model/20260826_015838/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260819_105722/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260821_104949/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260819_113501/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260821_110219/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260821_102639/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260821_005524/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260821_111016/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260821_112400/summary.json",
+    "outputs/eval/act_so101_d405_demo/20260819_112116/summary.json"
+  ],
+  "runs": {
+    "act": {
+      "summary": "/Users/romil/Developer/Lerobot setup/assets/eval/summary_act.json",
+      "source_run": "outputs/eval/act_so101_d405_demo/20260821_111016",
+      "pc_success": 10.0,
+      "n_trials": 10,
+      "n_success": 1,
+      "complete_protocol": false
+    },
+    "smolvla": {
+      "summary": "/Users/romil/Developer/Lerobot setup/assets/eval/summary_smolvla.json",
+      "source_run": "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260826_023812",
+      "pc_success": 0.0,
+      "n_trials": 15,
+      "n_success": 0,
+      "complete_protocol": true
+    }
+  }
+}

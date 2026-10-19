@@ -1,0 +1,20 @@
+{
+  "pc_success": 10.0,
+  "n_trials": 10,
+  "n_success": 1,
+  "per_condition": {
+    "keys=left": {
+      "n": 5,
+      "n_success": 1,
+      "pc_success": 20.0
+    },
+    "keys=center": {
+      "n": 5,
+      "n_success": 0,
+      "pc_success": 0.0
+    }
+  },
+  "method": "ACT (partial 10/15)",
+  "source_run": "outputs/eval/act_so101_d405_demo/20260821_111016",
+  "complete_protocol": false
+}

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "so101-visuomotor-ml"
+version = "0.1.0"
+description = "Offline visuomotor ML for SO-101: ACT, SmolVLA convert, HG-DAgger fine-tune, protocol metrics"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "romil0001", email = "romil2002modi@gmail.com" }]
+keywords = ["robotics", "imitation-learning", "ACT", "DAgger", "SmolVLA", "visuomotor"]
+dependencies = [
+  "numpy",
+  "torch",
+  "opencv-python-headless",
+  "PyYAML",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "matplotlib", "openpyxl"]
+jax = ["jax", "jaxlib", "flax", "optax"]
+smolvla = ["lerobot"]
+sheet = ["openpyxl"]
+
+[project.urls]
+Homepage = "https://github.com/romil0001/so101-visuomotor-ml"
+FullStack = "https://github.com/romil0001/SO101_Visuomotor_Manipulation"
+
+[project.scripts]
+so101-ml = "so101_ml.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["so101_ml*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

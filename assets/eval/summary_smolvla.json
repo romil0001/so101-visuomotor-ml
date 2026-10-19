@@ -1,0 +1,25 @@
+{
+  "pc_success": 0.0,
+  "n_trials": 15,
+  "n_success": 0,
+  "per_condition": {
+    "keys=left": {
+      "n": 5,
+      "n_success": 0,
+      "pc_success": 0.0
+    },
+    "keys=center": {
+      "n": 5,
+      "n_success": 0,
+      "pc_success": 0.0
+    },
+    "keys=right": {
+      "n": 5,
+      "n_success": 0,
+      "pc_success": 0.0
+    }
+  },
+  "method": "SmolVLA (15 trials)",
+  "source_run": "outputs/eval/_Users_romil_Developer_Lerobot setup_outputs_train_smolvla_so101_d405_demo_checkpoints_last_pretrained_model/20260826_023812",
+  "complete_protocol": true
+}
